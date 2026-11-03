@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+{% block title %}Import complete · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap max-w-2xl">
+  <div class="card p-8 text-center">
+    <span class="mx-auto grid size-12 place-items-center rounded-full bg-emerald-100 text-emerald-800">
+      <svg aria-hidden="true" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
+    </span>
+    <h1 class="mt-5 text-2xl font-bold text-ink">Import completed</h1>
+    <p class="mt-2 text-sm leading-6 text-slate-600">{{ batch.rows_imported }} learners were saved to {{ batch.academic_year }} with permanent admission numbers. Reopening this batch will not create duplicate records.</p>
+    <div class="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
+      <a href="{% url 'learner_list' %}" class="btn-secondary">View learners</a>
+      <a href="{% url 'import_upload' %}" class="btn-primary">Import another CSV</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

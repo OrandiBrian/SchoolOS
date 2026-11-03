@@ -1,0 +1,77 @@
+{% extends "core/base.html" %}
+{% block title %}Staff and access · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="eyebrow">Head-only administration</p>
+      <h1 class="page-title mt-2">Staff &amp; access</h1>
+      <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Staff categories describe work. Access memberships grant logins and are managed separately.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'staff_create' %}" class="btn-secondary">Add staff record</a>
+      <a href="{% url 'membership_create' %}" class="btn-primary">Assign login access</a>
+    </div>
+  </div>
+
+  <section class="mt-8">
+    <h2 class="text-xl font-bold text-ink">Access memberships</h2>
+    <p class="mt-1 text-sm text-slate-500">Only head and staff roles listed here can use the application in this school.</p>
+    <div class="card mt-4 overflow-hidden">
+      {% if memberships %}
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Account</th><th>Role</th><th>Linked staff record</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {% for membership in memberships %}
+                <tr>
+                  <td><p class="font-bold text-ink">{{ membership.user.get_full_name|default:membership.user.username }}</p><p class="text-xs text-slate-500">@{{ membership.user.username }}</p></td>
+                  <td>{{ membership.get_role_display }}</td>
+                  <td>{{ membership.staff_record.full_name|default:"Not linked" }}</td>
+                  <td><span class="badge {% if membership.active %}badge-active{% else %}badge-muted{% endif %}">{% if membership.active %}Active{% else %}Inactive{% endif %}</span></td>
+                  <td class="text-right">
+                    <div class="flex justify-end gap-2">
+                      {% if membership.role == "teacher" %}<a href="{% url 'teacher_classes' membership.pk %}" class="btn-secondary !px-3 !py-1.5">Classes</a>{% endif %}
+                      <a href="{% url 'membership_edit' membership.pk %}" class="btn-secondary !px-3 !py-1.5">Edit</a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state m-4 border-0"><p class="font-bold text-ink">No login access assigned</p><p class="mt-1 text-sm text-slate-500">Create user accounts separately, then assign a scoped school role.</p></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="mt-9">
+    <h2 class="text-xl font-bold text-ink">Staff records</h2>
+    <p class="mt-1 text-sm text-slate-500">Non-teaching staff can be recorded without receiving a login.</p>
+    <div class="card mt-4 overflow-hidden">
+      {% if staff_records %}
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Category</th><th>Staff number</th><th>Contact</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {% for staff in staff_records %}
+                <tr>
+                  <td class="font-bold text-ink">{{ staff.full_name }}</td>
+                  <td>{{ staff.get_category_display }}</td>
+                  <td class="font-mono text-xs">{{ staff.employee_number|default:"—" }}</td>
+                  <td>{{ staff.phone|default:staff.email|default:"—" }}</td>
+                  <td><span class="badge {% if staff.active %}badge-active{% else %}badge-muted{% endif %}">{% if staff.active %}Active{% else %}Inactive{% endif %}</span></td>
+                  <td class="text-right"><a href="{% url 'staff_edit' staff.pk %}" class="btn-secondary !px-3 !py-1.5">Edit</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state m-4 border-0"><p class="font-bold text-ink">No staff records</p><p class="mt-1 text-sm text-slate-500">Add employment categories first. Login access remains a separate decision.</p></div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% load static %}
+<div class="card overflow-hidden">
+  {% if learners %}
+    <div class="divide-y divide-slate-100 sm:hidden">
+      {% for learner in learners %}
+      <a href="{% url 'learner_detail' learner.pk %}" class="block p-4 hover:bg-slate-50">
+        <div class="flex items-start justify-between gap-3"><span class="font-bold">{{ learner.full_name }}</span><span class="badge badge-muted">{{ learner.get_status_display }}</span></div>
+        <p class="mt-2 font-mono text-xs">{{ learner.admission_number }}</p>
+        {% with enrollment=learner.current_enrollments.0 %}<p class="mt-1 text-sm text-slate-500">{% if enrollment %}{{ enrollment.learning_group.grade }} · {{ enrollment.learning_group.name }}{% else %}Not enrolled{% endif %}</p>{% endwith %}
+      </a>
+      {% endfor %}
+    </div>
+    <div class="table-wrap hidden sm:block">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Learner</th>
+            <th>Admission no.</th>
+            <th>{% if current_year %}{{ current_year }} class{% else %}Current class{% endif %}</th>
+            <th>Status</th>
+            <th><span class="sr-only">Open</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for learner in learners %}
+            <tr class="hover:bg-slate-50">
+              <td>
+                <a href="{% url 'learner_detail' learner.pk %}" class="font-bold text-ink hover:text-forest">{{ learner.full_name }}</a>
+                {% if learner.preferred_name %}<p class="text-xs text-slate-500">Prefers {{ learner.preferred_name }}</p>{% endif %}
+              </td>
+              <td class="font-mono text-xs">{{ learner.admission_number }}</td>
+              <td>
+                {% with enrollment=learner.current_enrollments.0 %}
+                  {% if enrollment %}{{ enrollment.learning_group.grade }} · {{ enrollment.learning_group.name }}{% else %}<span class="text-slate-400">Not enrolled</span>{% endif %}
+                {% endwith %}
+              </td>
+              <td>
+                <span class="badge {% if learner.status == 'active' %}badge-active{% else %}badge-muted{% endif %}">{{ learner.get_status_display }}</span>
+              </td>
+              <td class="text-right"><a href="{% url 'learner_detail' learner.pk %}" class="btn-secondary !px-3 !py-1.5">Open</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state m-4 border-0">
+      <p class="text-lg font-bold text-ink">No learners match this view</p>
+      <p class="mx-auto mt-1 max-w-md text-sm text-slate-500">Try a broader search. New learner records can be added with registration or CSV import.</p>
+    </div>
+  {% endif %}
+</div>

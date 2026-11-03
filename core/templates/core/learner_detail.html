@@ -1,0 +1,92 @@
+{% extends "core/base.html" %}
+{% block title %}{{ learner.full_name }} · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <a href="{% url 'learner_list' %}" class="text-sm font-bold text-forest hover:underline">← All learners</a>
+  <div class="mt-4 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+    <div class="flex items-start gap-4">
+      <span class="grid size-14 shrink-0 place-items-center rounded-lg bg-forest-light text-xl font-black text-forest">{{ learner.first_name|first }}{{ learner.last_name|first }}</span>
+      <div>
+        <p class="eyebrow">Learner record</p>
+        <h1 class="page-title mt-1">{{ learner.full_name }}</h1>
+        <p class="mt-1 font-mono text-sm font-bold text-slate-500">{{ learner.admission_number }}</p>
+      </div>
+    </div>
+    {% if can_manage %}
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'learner_edit' learner.pk %}" class="btn-secondary">Edit details</a>
+        <a href="{% url 'enrollment_add' learner.pk %}" class="btn-primary">Add annual enrolment</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)]">
+    <div class="space-y-6">
+      <section class="card p-5 sm:p-6">
+        <div class="flex items-center justify-between gap-3">
+          <div><h2 class="text-lg font-bold text-ink">Annual enrolment</h2><p class="mt-1 text-sm text-slate-500">One active class per learner and academic year.</p></div>
+          {% if can_manage %}<a href="{% url 'enrollment_add' learner.pk %}" class="text-sm font-bold text-forest hover:underline">Add</a>{% endif %}
+        </div>
+        {% if enrollments %}
+          <div class="mt-4 divide-y divide-slate-100">
+            {% for enrollment in enrollments %}
+              <div class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="font-bold text-ink">{{ enrollment.academic_year }} · {{ enrollment.learning_group.grade }}</p>
+                  <p class="mt-1 text-sm text-slate-500">Stream {{ enrollment.learning_group.name }} · Enrolled {{ enrollment.enrolled_on|date:"j M Y" }}</p>
+                </div>
+                <span class="badge {% if enrollment.status == 'active' %}badge-active{% else %}badge-muted{% endif %}">{{ enrollment.get_status_display }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state mt-4 border-0"><p class="font-bold text-ink">No annual enrolment yet</p><p class="mt-1 text-sm text-slate-500">Add a class from the configured academic year.</p></div>
+        {% endif %}
+      </section>
+
+      <section class="card p-5 sm:p-6">
+        <div class="flex items-center justify-between gap-3">
+          <div><h2 class="text-lg font-bold text-ink">Guardians</h2><p class="mt-1 text-sm text-slate-500">Linked adults can be shared across siblings in this school.</p></div>
+          {% if can_manage %}<a href="{% url 'guardian_add' learner.pk %}" class="text-sm font-bold text-forest hover:underline">Add guardian</a>{% endif %}
+        </div>
+        {% if guardian_links %}
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            {% for link in guardian_links %}
+              <div class="rounded-lg border border-slate-200 p-4">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <p class="font-bold text-ink">{{ link.guardian.full_name }}</p>
+                    <p class="mt-1 text-sm text-slate-500">{{ link.relationship }}{% if link.is_primary %} · Primary{% endif %}</p>
+                  </div>
+                  {% if can_manage %}
+                    <form method="post" action="{% url 'guardian_unlink' learner.pk link.pk %}" onsubmit="return confirm('Remove this guardian link? The guardian record will be kept.');">
+                      {% csrf_token %}
+                      <button class="text-xs font-bold text-red-700 hover:underline" type="submit">Unlink</button>
+                    </form>
+                  {% endif %}
+                </div>
+                {% if link.guardian.phone %}<p class="mt-3 text-sm text-slate-700">{{ link.guardian.phone }}</p>{% endif %}
+                {% if link.guardian.email %}<p class="text-sm text-slate-700">{{ link.guardian.email }}</p>{% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state mt-4 border-0"><p class="font-bold text-ink">No guardian linked</p><p class="mt-1 text-sm text-slate-500">Add at least one guardian contact when the details are available.</p></div>
+        {% endif %}
+      </section>
+    </div>
+
+    <aside class="card p-5 sm:p-6">
+      <h2 class="text-lg font-bold text-ink">Profile</h2>
+      <dl class="mt-5 space-y-5">
+        <div><dt class="detail-label">Status</dt><dd class="mt-1"><span class="badge {% if learner.status == 'active' %}badge-active{% else %}badge-muted{% endif %}">{{ learner.get_status_display }}</span></dd></div>
+        <div><dt class="detail-label">Date of birth</dt><dd class="detail-value">{{ learner.date_of_birth|date:"j M Y"|default:"Not recorded" }}</dd></div>
+        <div><dt class="detail-label">Gender</dt><dd class="detail-value">{{ learner.get_gender_display|default:"Not recorded" }}</dd></div>
+        <div><dt class="detail-label">Admission date</dt><dd class="detail-value">{{ learner.admission_date|date:"j M Y" }}</dd></div>
+        <div><dt class="detail-label">Preferred name</dt><dd class="detail-value">{{ learner.preferred_name|default:"Not recorded" }}</dd></div>
+        {% if learner.notes %}<div><dt class="detail-label">Notes</dt><dd class="detail-value whitespace-pre-line">{{ learner.notes }}</dd></div>{% endif %}
+      </dl>
+    </aside>
+  </div>
+</div>
+{% endblock %}

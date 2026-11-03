@@ -1,0 +1,46 @@
+{% extends "core/base.html" %}
+{% block title %}Learners · {{ current_school.name }}{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="eyebrow">Registration</p>
+      <h1 class="page-title mt-2">Learners</h1>
+      <p class="mt-2 text-sm text-slate-600">Search learner records for {{ current_school.name }}.</p>
+    </div>
+    {% if can_manage %}
+      <a href="{% url 'learner_create' %}" class="btn-primary">Register learner</a>
+    {% endif %}
+  </div>
+
+  <form method="get" class="card mt-7 grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_10rem_auto]" role="search">
+    <div>
+      <label for="learner-search" class="sr-only">Search learners</label>
+      <input id="learner-search" class="form-input" type="search" name="q" value="{{ query }}" placeholder="Name or admission number" autocomplete="off"
+        hx-get="{% url 'learner_list' %}"
+        hx-trigger="input changed delay:300ms, search"
+        hx-target="#learner-results"
+        hx-include="closest form"
+        hx-push-url="true"
+        hx-indicator="#search-loading">
+    </div>
+    <div>
+      <label for="learner-status" class="sr-only">Learner status</label>
+      <select id="learner-status" class="form-select" name="status" hx-get="{% url 'learner_list' %}" hx-trigger="change" hx-target="#learner-results" hx-include="closest form" hx-push-url="true">
+        <option value="">All statuses</option>
+        <option value="active" {% if selected_status == "active" %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if selected_status == "inactive" %}selected{% endif %}>Inactive</option>
+        <option value="withdrawn" {% if selected_status == "withdrawn" %}selected{% endif %}>Withdrawn</option>
+      </select>
+    </div>
+    <button class="btn-secondary" type="submit">Search</button>
+  </form>
+  <p id="search-loading" class="htmx-indicator mt-2 items-center gap-2 text-sm text-slate-500">
+    <svg class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
+    Updating results
+  </p>
+  <div id="learner-results" class="mt-4">
+    {% include "core/partials/learner_results.html" %}
+  </div>
+</div>
+{% endblock %}

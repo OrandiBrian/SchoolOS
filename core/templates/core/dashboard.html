@@ -1,0 +1,166 @@
+{% extends "core/base.html" %}
+{% block title %}Overview · {{ current_school.name }}{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="eyebrow">{{ current_school.name }}</p>
+      <h1 class="page-title mt-2">
+        {% if role == "board" or role == "director" %}School summary{% else %}Good day, {{ request.user.first_name|default:request.user.username }}{% endif %}
+      </h1>
+      <p class="mt-2 text-sm text-slate-600">{% if current_year %}{{ current_year }} academic year{% else %}Academic setup is not complete{% endif %} · {{ current_membership.get_role_display }}</p>
+    </div>
+    {% if role == "head" or role == "secretary" %}
+      <a href="{% url 'learner_create' %}" class="btn-primary">
+        <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Register learner
+      </a>
+    {% endif %}
+  </div>
+
+  <section class="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="School totals">
+    <div class="stat-card">
+      <p class="text-sm font-medium text-slate-500">Active learners</p>
+      <p class="stat-value">{{ learner_count }}</p>
+      <p class="mt-1 text-xs text-slate-400">School-wide</p>
+    </div>
+    <div class="stat-card">
+      <p class="text-sm font-medium text-slate-500">Active enrolments</p>
+      <p class="stat-value">{{ enrollment_count }}</p>
+      <p class="mt-1 text-xs text-slate-400">{{ current_year|default:"No current year" }}</p>
+    </div>
+    <div class="stat-card">
+      <p class="text-sm font-medium text-slate-500">Classes</p>
+      <p class="stat-value">{{ group_count }}</p>
+      <p class="mt-1 text-xs text-slate-400">Grades and streams</p>
+    </div>
+    <div class="stat-card">
+      <p class="text-sm font-medium text-slate-500">Staff records</p>
+      <p class="stat-value">{{ active_staff_count }}</p>
+      <p class="mt-1 text-xs text-slate-400">Active records</p>
+    </div>
+  </section>
+
+  {% if show_people %}
+    <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(16rem,0.7fr)]">
+      <section class="card overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <div>
+            <h2 class="font-bold text-ink">Recently registered</h2>
+            <p class="mt-0.5 text-xs text-slate-500">Newest learner records in this school</p>
+          </div>
+          {% if recent_learners %}<a href="{% url 'learner_list' %}" class="text-sm font-bold text-forest hover:underline">View all</a>{% endif %}
+        </div>
+        {% if recent_learners %}
+          <div class="divide-y divide-slate-100">
+            {% for learner in recent_learners %}
+              <a href="{% url 'learner_detail' learner.pk %}" class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-slate-50">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-bold text-ink">{{ learner.full_name }}</p>
+                  <p class="mt-0.5 text-xs text-slate-500">
+                    {% with enrollment=learner.current_enrollments.0 %}
+                      {% if enrollment %}{{ enrollment.learning_group.grade }} · {{ enrollment.learning_group.name }}{% else %}No current-year class{% endif %}
+                    {% endwith %}
+                  </p>
+                </div>
+                <span class="shrink-0 font-mono text-xs text-slate-500">{{ learner.admission_number }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="p-5">
+            <div class="empty-state border-0">
+              <p class="font-bold text-ink">No learners registered yet</p>
+              <p class="mt-1 text-sm text-slate-500">Begin with one learner, or validate a CSV before importing a class list.</p>
+              <a href="{% url 'learner_create' %}" class="btn-primary mt-4">Register the first learner</a>
+            </div>
+          </div>
+        {% endif %}
+      </section>
+      <section class="space-y-3">
+        <div class="card p-5">
+          <p class="eyebrow">Foundation status</p>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">Academic year</dt><dd class="font-bold text-ink">{{ current_year|default:"Not set" }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">Learner numbers</dt><dd class="font-bold text-ink">{{ current_school.admission_prefix }}-000001</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">Data scope</dt><dd class="font-bold text-ink">This school</dd></div>
+          </dl>
+        </div>
+        {% if role == "head" %}
+          <a href="{% url 'import_upload' %}" class="card block p-5 transition hover:border-forest">
+            <p class="font-bold text-ink">Onboarding an existing class?</p>
+            <p class="mt-1 text-sm leading-6 text-slate-500">Preview every row and resolve validation errors before confirming the import.</p>
+            <span class="mt-3 inline-flex text-sm font-bold text-forest">Start with a CSV →</span>
+          </a>
+        {% endif %}
+      </section>
+    </div>
+  {% elif role == "teacher" %}
+    <section class="mt-8">
+      <div class="flex items-end justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-ink">Your assigned classes</h2>
+          <p class="mt-1 text-sm text-slate-500">Learner records are limited to these classes.</p>
+        </div>
+        <a href="{% url 'learner_list' %}" class="text-sm font-bold text-forest hover:underline">Open learners</a>
+      </div>
+      {% if assigned_groups %}
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {% for group in assigned_groups %}
+            <a href="{% url 'learner_list' %}?q={{ group.grade.name|urlencode }}" class="card p-5 transition hover:border-forest">
+              <p class="text-lg font-bold text-ink">{{ group.grade }}</p>
+              <p class="mt-1 text-sm text-slate-500">{{ group.academic_year }} · Stream {{ group.name }}</p>
+              <p class="mt-5 text-2xl font-bold text-forest">{{ group.active_learners }}</p>
+              <p class="text-xs text-slate-500">active learners</p>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state mt-4">
+          <p class="font-bold text-ink">No classes assigned</p>
+          <p class="mt-1 text-sm text-slate-500">A school head can assign classes from Staff &amp; access.</p>
+        </div>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="mt-8">
+      <div>
+        <p class="eyebrow">Aggregate view</p>
+        <h2 class="mt-2 text-xl font-bold text-ink">Active learners by grade</h2>
+        <p class="mt-1 text-sm text-slate-500">Individual learner records are not shown for this role.</p>
+      </div>
+      <div class="card mt-4 overflow-hidden">
+        {% if grade_summary %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Grade</th><th>Active learners</th></tr></thead>
+              <tbody>
+                {% for grade in grade_summary %}
+                  <tr><td class="font-bold text-ink">{{ grade.name }}</td><td>{{ grade.learner_total }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state m-4 border-0"><p class="font-bold text-ink">No summary available</p><p class="mt-1 text-sm text-slate-500">The current academic year has not been configured.</p></div>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="mt-10 border-t border-slate-200 pt-7">
+    <p class="eyebrow">Later phases</p>
+    <div class="mt-4 grid gap-3 md:grid-cols-3">
+      <div class="rounded-lg border border-dashed border-slate-300 p-4">
+        <p class="font-bold text-slate-700">Attendance</p><p class="mt-1 text-sm text-slate-500">Daily assigned-class registers arrive in Phase 2.</p>
+      </div>
+      <div class="rounded-lg border border-dashed border-slate-300 p-4">
+        <p class="font-bold text-slate-700">Finance</p><p class="mt-1 text-sm text-slate-500">Fee schedules, invoices, and payments follow foundation.</p>
+      </div>
+      <div class="rounded-lg border border-dashed border-slate-300 p-4">
+        <p class="font-bold text-slate-700">Parent access</p><p class="mt-1 text-sm text-slate-500">Guardian accounts and portals remain deferred.</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

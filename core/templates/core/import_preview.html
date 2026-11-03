@@ -1,0 +1,79 @@
+{% extends "core/base.html" %}
+{% block title %}Import preview · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <p class="eyebrow">{{ batch.academic_year }} · Import preview</p>
+  <h1 class="page-title mt-2">{{ batch.original_filename }}</h1>
+  <p class="mt-2 text-sm text-slate-600">{{ preview.rows|length }} data row{{ preview.rows|length|pluralize }} checked. Nothing has been imported yet.</p>
+
+  {% if preview.errors %}
+    <div class="alert alert-error mt-6">
+      <p class="font-bold">Validation failed. Fix these issues and upload a new file.</p>
+      <p class="mt-1 text-sm">The import cannot be confirmed until the file has zero errors.</p>
+    </div>
+    <div class="card mt-4 overflow-hidden">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Row</th><th>Field</th><th>Problem</th></tr></thead>
+          <tbody>
+            {% for error in preview.errors %}
+              <tr><td class="font-mono">{{ error.row }}</td><td>{{ error.field }}</td><td>{{ error.message }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-success mt-6">
+      <p class="font-bold">Validation passed</p>
+      <p class="mt-1 text-sm">All {{ preview.rows|length }} rows can be imported into {{ batch.academic_year }}.</p>
+    </div>
+  {% endif %}
+
+  {% if preview.duplicate_rows %}
+    <div class="alert alert-warning mt-4">
+      <p class="font-bold">Possible duplicates in existing records</p>
+      <p class="mt-1 text-sm">Rows {{ preview.duplicate_rows|join:", " }} match an existing learner's name and birth date, or lack a birth date. Review them in the table. No records are merged automatically.</p>
+    </div>
+  {% endif %}
+
+  <div class="card mt-5 overflow-hidden">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Row</th><th>Learner</th><th>Admission date</th><th>Class</th><th>Guardian</th></tr></thead>
+        <tbody>
+          {% for row in preview.rows %}
+            <tr {% if row.row_number in preview.duplicate_rows %}class="bg-amber-50"{% endif %}>
+              <td class="font-mono">{{ row.row_number }}</td>
+              <td><p class="font-bold text-ink">{{ row.first_name }} {{ row.middle_name }} {{ row.last_name }}</p>{% if row.date_of_birth %}<p class="text-xs text-slate-500">Born {{ row.date_of_birth }}</p>{% endif %}</td>
+              <td>{{ row.admission_date }}</td>
+              <td>{% if row.learning_group %}{{ row.learning_group.grade }} · {{ row.learning_group.name }}{% else %}<span class="text-red-700">Unmatched</span>{% endif %}</td>
+              <td>{{ row.guardian_first_name }} {{ row.guardian_last_name }}{% if row.guardian_relationship %}<p class="text-xs text-slate-500">{{ row.guardian_relationship }}</p>{% endif %}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" class="py-8 text-center text-slate-500">No data rows found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <form method="post" class="card mt-5 p-5">
+    {% csrf_token %}
+    {% if preview.errors %}
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-600">Correct the file and start a new preview.</p>
+        <a href="{% url 'import_upload' %}" class="btn-primary">Upload corrected CSV</a>
+      </div>
+    {% else %}
+      {% if preview.duplicate_rows %}
+        {% include "core/partials/form_field.html" with field=confirm_form.confirm_possible_duplicates %}
+      {% endif %}
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <a href="{% url 'import_upload' %}" class="text-sm font-bold text-slate-600 hover:text-ink">Cancel and upload again</a>
+        <button class="btn-primary" type="submit">Confirm import of {{ preview.rows|length }} learners</button>
+      </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

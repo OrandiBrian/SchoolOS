@@ -1,0 +1,53 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · SchoolOS</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="bg-paper">
+  <main class="grid min-h-screen lg:grid-cols-[minmax(18rem,0.9fr)_1.1fr]">
+    <section class="relative hidden overflow-hidden bg-ink p-10 text-white lg:flex lg:flex-col lg:justify-between">
+      <div class="absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 20% 20%, #2b9b75 0, transparent 34%), radial-gradient(circle at 80% 75%, #d95d43 0, transparent 30%);"></div>
+      <div class="relative">
+        <div class="flex items-center gap-3">
+          <span class="grid size-11 place-items-center rounded-lg bg-forest text-lg font-black">S</span>
+          <span class="text-lg font-bold">SchoolOS</span>
+        </div>
+        <h1 class="mt-24 max-w-md text-4xl font-bold leading-tight">A clear foundation for every learner.</h1>
+        <p class="mt-5 max-w-md text-base leading-7 text-slate-300">School-scoped records, thoughtful access, and a reliable annual history from the first registration.</p>
+      </div>
+      <p class="relative text-xs text-slate-400">FayBri SchoolOS · Foundation release</p>
+    </section>
+    <section class="flex items-center justify-center px-5 py-12 sm:px-10">
+      <div class="w-full max-w-md">
+        <div class="mb-9 flex items-center gap-3 lg:hidden">
+          <span class="grid size-10 place-items-center rounded-lg bg-forest font-black text-white">S</span>
+          <span class="font-bold text-ink">SchoolOS</span>
+        </div>
+        <p class="eyebrow">Staff access</p>
+        <h2 class="mt-2 text-3xl font-bold text-ink">Sign in to your school</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Use the individual account issued by your school head.</p>
+        <form method="post" class="mt-8 space-y-5">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-error">The username or password did not match.</div>
+          {% endif %}
+          <div>
+            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+            <input class="form-input" type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}" autocomplete="username" required autofocus>
+          </div>
+          <div>
+            <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+            <input class="form-input" type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}" autocomplete="current-password" required>
+          </div>
+          <button type="submit" class="btn-primary w-full">Sign in</button>
+        </form>
+        <p class="mt-8 text-center text-xs text-slate-500">Access is restricted to active school memberships.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

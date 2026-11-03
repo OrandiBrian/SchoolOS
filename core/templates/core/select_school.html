@@ -1,0 +1,19 @@
+{% extends "core/base.html" %}
+{% block title %}Choose a school · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap max-w-3xl">
+  <p class="eyebrow">Active school</p>
+  <h1 class="page-title mt-2">Choose your school</h1>
+  <p class="mt-2 text-sm text-slate-600">Every page and record is scoped to the school you select.</p>
+  <form method="post" class="mt-8 grid gap-3 sm:grid-cols-2">
+    {% csrf_token %}
+    {% for membership in memberships %}
+      <button name="school_id" value="{{ membership.school_id }}" class="card p-5 text-left transition hover:border-forest hover:shadow-md">
+        <span class="block text-lg font-bold text-ink">{{ membership.school.name }}</span>
+        <span class="mt-1 block text-sm text-slate-500">{{ membership.get_role_display }}</span>
+        <span class="mt-4 inline-flex text-sm font-bold text-forest">Open school →</span>
+      </button>
+    {% endfor %}
+  </form>
+</div>
+{% endblock %}

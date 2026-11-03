@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+{% block title %}{{ title }} · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap max-w-3xl">
+  <p class="eyebrow">Administration</p>
+  <h1 class="page-title mt-2">{{ title }}</h1>
+  {% if help_text %}<p class="mt-2 text-sm leading-6 text-slate-600">{{ help_text }}</p>{% endif %}
+  <form method="post" class="card mt-7 p-5 sm:p-7">
+    {% csrf_token %}
+    {% include "core/partials/form.html" %}
+    <div class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+      {% if cancel_url %}<a href="{% url cancel_url %}" class="btn-secondary">Cancel</a>{% endif %}
+      <button type="submit" class="btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

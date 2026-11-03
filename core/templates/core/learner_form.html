@@ -1,0 +1,51 @@
+{% extends "core/base.html" %}
+{% block title %}{% if is_create %}Register learner{% else %}Edit learner{% endif %} · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap max-w-5xl">
+  <div class="mb-6">
+    <a href="{% if is_create %}{% url 'learner_list' %}{% else %}{% url 'learner_detail' learner.pk %}{% endif %}" class="text-sm font-bold text-forest hover:underline">← Back</a>
+    <p class="eyebrow mt-4">Registration</p>
+    <h1 class="page-title mt-2">{% if is_create %}Register a learner{% else %}Edit learner details{% endif %}</h1>
+    <p class="mt-2 text-sm leading-6 text-slate-600">{% if is_create %}The admission number is issued automatically and cannot be edited or reused.{% else %}Admission number <span class="font-mono font-bold text-ink">{{ admission_number }}</span> is permanent.{% endif %}</p>
+  </div>
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+    <form method="post" class="card p-5 sm:p-7">
+      {% csrf_token %}
+      {% if is_create %}
+        <div
+          hx-get="{% url 'duplicate_check' %}"
+          hx-trigger="keyup changed delay:500ms from:#id_first_name, keyup changed delay:500ms from:#id_last_name"
+          hx-include="#id_first_name,#id_last_name,#id_date_of_birth"
+          hx-target="#duplicate-check"
+          hx-indicator="#duplicate-loading">
+          {% include "core/partials/form.html" %}
+        </div>
+        <div id="duplicate-check">
+          {% if possible_duplicates %}
+            {% include "core/partials/duplicate_check.html" %}
+          {% endif %}
+        </div>
+        <p id="duplicate-loading" class="htmx-indicator mt-2 text-sm text-slate-500">Checking for similar names…</p>
+      {% else %}
+        {% include "core/partials/form.html" %}
+      {% endif %}
+      <div class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+        <a href="{% if is_create %}{% url 'learner_list' %}{% else %}{% url 'learner_detail' learner.pk %}{% endif %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary">{% if is_create %}Register learner{% else %}Save changes{% endif %}</button>
+      </div>
+    </form>
+    <aside class="space-y-4">
+      <div class="card p-5">
+        <p class="font-bold text-ink">Identity and history</p>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Core details are kept separately from annual class enrolment. Changing this year's class will not rewrite previous years.</p>
+      </div>
+      {% if is_create %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900">
+          <p class="font-bold">Duplicate review</p>
+          <p class="mt-1">Names are compared for a warning only. Records are never merged automatically.</p>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

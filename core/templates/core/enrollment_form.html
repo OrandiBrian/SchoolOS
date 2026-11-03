@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% block title %}Annual enrolment · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap max-w-3xl">
+  <a href="{% url 'learner_detail' learner.pk %}" class="text-sm font-bold text-forest hover:underline">← {{ learner.full_name }}</a>
+  <p class="eyebrow mt-4">Annual history</p>
+  <h1 class="page-title mt-2">Add annual enrolment</h1>
+  <p class="mt-2 text-sm leading-6 text-slate-600">Each academic year receives its own record. Previous enrolment history remains unchanged.</p>
+  <form method="post" class="card mt-7 p-5 sm:p-7">
+    {% csrf_token %}
+    {% include "core/partials/form.html" %}
+    <div class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+      <a href="{% url 'learner_detail' learner.pk %}" class="btn-secondary">Cancel</a>
+      <button class="btn-primary" type="submit">Record enrolment</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

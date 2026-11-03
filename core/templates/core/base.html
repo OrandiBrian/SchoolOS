@@ -1,0 +1,129 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}SchoolOS{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+</head>
+<body class="bg-paper">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-forest">Skip to content</a>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="border-b border-white/10 px-5 py-6">
+        <a href="{% url 'dashboard' %}" class="flex items-center gap-3">
+          <span class="grid size-10 place-items-center rounded-lg bg-forest text-lg font-black text-white">S</span>
+          <span>
+            <span class="block text-base font-bold text-white">SchoolOS</span>
+            <span class="block text-xs text-slate-300">{{ current_school.name }}</span>
+          </span>
+        </a>
+      </div>
+      <nav class="flex-1 space-y-1 px-3 py-5" aria-label="Main navigation">
+        <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}nav-link-active{% endif %}">
+          <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Overview
+        </a>
+        {% if current_membership.role == "head" or current_membership.role == "secretary" or current_membership.role == "teacher" %}
+          <a href="{% url 'learner_list' %}" class="nav-link {% if 'learner' in request.resolver_match.url_name %}nav-link-active{% endif %}">
+            <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Learners
+          </a>
+        {% endif %}
+        {% if current_membership.role == "head" or current_membership.role == "secretary" %}
+          <a href="{% url 'learner_create' %}" class="nav-link {% if request.resolver_match.url_name == 'learner_create' %}nav-link-active{% endif %}">
+            <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+            Register learner
+          </a>
+          <a href="{% url 'import_upload' %}" class="nav-link {% if 'import' in request.resolver_match.url_name %}nav-link-active{% endif %}">
+            <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+            CSV import
+          </a>
+        {% endif %}
+        {% if current_membership.role == "head" %}
+          <p class="px-3 pb-1 pt-5 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">Administration</p>
+          <a href="{% url 'academics' %}" class="nav-link {% if 'academic' in request.resolver_match.url_name or request.resolver_match.url_name == 'academics' or request.resolver_match.url_name == 'term_create' or request.resolver_match.url_name == 'group_create' or request.resolver_match.url_name == 'grade_create' %}nav-link-active{% endif %}">
+            <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-6 9 6-9 6-9-6Z"/><path d="M7 12.7V17c2.8 1.8 7.2 1.8 10 0v-4.3"/><path d="M21 10v6"/></svg>
+            Academic setup
+          </a>
+          <a href="{% url 'staff_list' %}" class="nav-link {% if 'staff' in request.resolver_match.url_name or 'membership' in request.resolver_match.url_name or 'teacher_classes' == request.resolver_match.url_name %}nav-link-active{% endif %}">
+            <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+            Staff &amp; access
+          </a>
+          <a href="{% url 'school_settings' %}" class="nav-link {% if 'settings' in request.resolver_match.url_name %}nav-link-active{% endif %}">
+            <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.82 2.82-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1V21H9.6v-.1A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.82-2.82.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1-.4H3v-4h.1A1.7 1.7 0 0 0 4.6 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.82-2.82.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1V3h4v.1A1.7 1.7 0 0 0 15.5 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.82 2.82-.06.06A1.7 1.7 0 0 0 19.4 9c.14.38.35.72.6 1 .28.25.62.39 1 .4h.1v4h-.1a1.7 1.7 0 0 0-1.6.6Z"/></svg>
+            School settings
+          </a>
+        {% endif %}
+      </nav>
+      <div class="border-t border-white/10 p-4">
+        <div class="mb-3 flex items-center gap-3 rounded-lg bg-white/5 p-3">
+          <span class="grid size-9 place-items-center rounded-full bg-forest text-sm font-bold">{{ request.user.username|first|upper }}</span>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-bold text-white">{{ request.user.get_full_name|default:request.user.username }}</p>
+            <p class="truncate text-xs text-slate-400">{{ current_membership.get_role_display }}</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="{% url 'select_school' %}" class="btn-secondary flex-1 !border-white/20 !bg-transparent !text-slate-200 hover:!bg-white/10">Switch school</a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="icon-button !border-white/20 !bg-transparent !text-slate-300 hover:!bg-white/10" aria-label="Sign out" title="Sign out">
+              <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </aside>
+
+    <div class="min-w-0">
+      <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur lg:hidden">
+        <div class="flex items-center justify-between px-4 py-3">
+          <a href="{% url 'dashboard' %}" class="flex min-w-0 items-center gap-2">
+            <span class="grid size-8 place-items-center rounded-lg bg-forest text-sm font-black text-white">S</span>
+            <span class="truncate text-sm font-bold text-ink">{{ current_school.name }}</span>
+          </a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="icon-button" aria-label="Sign out">
+              <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg>
+            </button>
+          </form>
+        </div>
+        <nav class="flex gap-1 overflow-x-auto px-3 pb-2" aria-label="Mobile navigation">
+          <a href="{% url 'dashboard' %}" class="mobile-nav-link">Overview</a>
+          {% if current_membership.role == "head" or current_membership.role == "secretary" or current_membership.role == "teacher" %}
+            <a href="{% url 'learner_list' %}" class="mobile-nav-link">Learners</a>
+          {% endif %}
+          {% if current_membership.role == "head" or current_membership.role == "secretary" %}
+            <a href="{% url 'learner_create' %}" class="mobile-nav-link">Register</a>
+            <a href="{% url 'import_upload' %}" class="mobile-nav-link">Import</a>
+          {% endif %}
+          {% if current_membership.role == "head" %}
+            <a href="{% url 'academics' %}" class="mobile-nav-link">Academics</a>
+            <a href="{% url 'staff_list' %}" class="mobile-nav-link">Staff</a>
+            <a href="{% url 'school_settings' %}" class="mobile-nav-link">Settings</a>
+          {% endif %}
+        </nav>
+      </header>
+
+      <main id="main-content">
+        {% if messages %}
+          <div class="page-wrap !pb-0">
+            <div class="space-y-2" aria-live="polite">
+              {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

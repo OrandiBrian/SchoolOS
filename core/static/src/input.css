@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #17324d;
+  --color-forest: #17624b;
+  --color-forest-light: #dff3e9;
+  --color-sky-soft: #edf6f9;
+  --color-coral: #d95d43;
+  --color-paper: #f7f8f4;
+  --font-sans: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    @apply bg-paper text-ink antialiased;
+  }
+
+  body {
+    @apply min-h-screen;
+  }
+
+  a,
+  button {
+    @apply outline-offset-2 focus-visible:outline-2 focus-visible:outline-forest;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen lg:grid lg:grid-cols-[17rem_minmax(0,1fr)];
+  }
+
+  .sidebar {
+    @apply hidden bg-ink text-white lg:flex lg:min-h-screen lg:flex-col;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white;
+  }
+
+  .nav-link-active {
+    @apply bg-white text-ink shadow-sm hover:bg-white hover:text-ink;
+  }
+
+  .mobile-nav-link {
+    @apply flex min-w-max items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-forest-light;
+  }
+
+  .page-wrap {
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10 lg:py-9;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold tracking-normal text-ink sm:text-3xl;
+  }
+
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.16em] text-forest;
+  }
+
+  .card {
+    @apply rounded-lg border border-slate-200 bg-white shadow-sm;
+  }
+
+  .stat-card {
+    @apply rounded-lg border border-slate-200 bg-white p-5 shadow-sm;
+  }
+
+  .stat-value {
+    @apply mt-2 text-3xl font-bold tracking-normal text-ink;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-800;
+  }
+
+  .icon-button {
+    @apply inline-flex size-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50;
+  }
+
+  .form-label {
+    @apply mb-1.5 block text-sm font-bold text-slate-700;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-forest focus:ring-2 focus:ring-forest/15;
+  }
+
+  .form-textarea {
+    @apply min-h-24;
+  }
+
+  .form-checkbox {
+    @apply size-4 rounded border-slate-300 text-forest focus:ring-forest;
+  }
+
+  .field-error {
+    @apply mt-1.5 text-sm font-medium text-red-700;
+  }
+
+  .help-text {
+    @apply mt-1.5 text-sm text-slate-500;
+  }
+
+  .alert {
+    @apply rounded-lg border px-4 py-3 text-sm font-medium;
+  }
+
+  .alert-success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-900;
+  }
+
+  .alert-error {
+    @apply border-red-200 bg-red-50 text-red-900;
+  }
+
+  .alert-info {
+    @apply border-sky-200 bg-sky-50 text-sky-900;
+  }
+
+  .alert-warning {
+    @apply border-amber-200 bg-amber-50 text-amber-950;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold;
+  }
+
+  .badge-active {
+    @apply bg-emerald-100 text-emerald-800;
+  }
+
+  .badge-muted {
+    @apply bg-slate-100 text-slate-600;
+  }
+
+  .table-wrap {
+    @apply overflow-x-auto;
+  }
+
+  .data-table {
+    @apply min-w-full divide-y divide-slate-200 text-left text-sm;
+  }
+
+  .data-table thead {
+    @apply bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500;
+  }
+
+  .data-table th {
+    @apply whitespace-nowrap px-4 py-3;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 align-top text-slate-700;
+  }
+
+  .data-table tbody {
+    @apply divide-y divide-slate-100;
+  }
+
+  .empty-state {
+    @apply rounded-lg border border-dashed border-slate-300 bg-white px-6 py-10 text-center;
+  }
+
+  .detail-label {
+    @apply text-xs font-bold uppercase tracking-wide text-slate-500;
+  }
+
+  .detail-value {
+    @apply mt-1 text-sm font-medium text-slate-800;
+  }
+
+  .htmx-indicator {
+    @apply hidden;
+  }
+
+  .htmx-request .htmx-indicator {
+    @apply inline-flex;
+  }
+}

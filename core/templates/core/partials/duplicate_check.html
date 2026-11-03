@@ -1,0 +1,14 @@
+{% if possible_duplicates %}
+  <div class="alert alert-warning mt-3">
+    <p class="font-bold">Possible existing learners</p>
+    <ul class="mt-2 space-y-1">
+      {% for learner in possible_duplicates %}
+        <li>
+          <a class="underline" href="{% url 'learner_detail' learner.pk %}">{{ learner.full_name }}</a>
+          · {{ learner.admission_number }}
+          {% if learner.date_of_birth %}· born {{ learner.date_of_birth|date:"j M Y" }}{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

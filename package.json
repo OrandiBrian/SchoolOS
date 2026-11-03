@@ -1,0 +1,12 @@
+{
+  "name": "schoolos-foundation",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "css:build": "tailwindcss -i core/static/src/input.css -o core/static/css/app.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.2.2",
+    "tailwindcss": "4.2.2"
+  }
+}
