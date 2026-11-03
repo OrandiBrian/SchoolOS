@@ -580,3 +580,47 @@ class ImportBatch(models.Model):
 
     def __str__(self):
         return f"{self.original_filename} ({self.get_status_display()})"
+
+
+class AttendanceRegister(models.Model):
+    learning_group = models.ForeignKey(LearningGroup, on_delete=models.PROTECT, related_name='attendance_registers')
+    date = models.DateField()
+    submitted = models.BooleanField(default=False)
+    version = models.PositiveIntegerField(default=1)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+    class Meta:
+        ordering = ['-date']
+        constraints = [models.UniqueConstraint(fields=['learning_group', 'date'], name='one_attendance_register_per_class_date')]
+
+
+class AttendanceEntry(models.Model):
+    class Status(models.TextChoices):
+        UNMARKED = '', 'Unmarked'
+        PRESENT = 'present', 'Present'
+        ABSENT = 'absent', 'Absent'
+        LATE = 'late', 'Late'
+        EXCUSED = 'excused', 'Excused'
+
+    register = models.ForeignKey(AttendanceRegister, on_delete=models.PROTECT, related_name='entries')
+    learner = models.ForeignKey(Learner, on_delete=models.PROTECT)
+    status = models.CharField(max_length=10, choices=Status.choices, blank=True)
+
+    class Meta:
+        ordering = ['learner__last_name', 'learner__first_name']
+        constraints = [models.UniqueConstraint(fields=['register', 'learner'], name='one_attendance_entry_per_register_learner')]
+
+
+class AttendanceChange(models.Model):
+    register = models.ForeignKey(AttendanceRegister, on_delete=models.PROTECT, related_name='changes')
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    action = models.CharField(max_length=16)
+    reason = models.CharField(max_length=500, blank=True)
+    changes = models.JSONField(default=list)
+    version = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['-version']
+        constraints = [models.UniqueConstraint(fields=['register', 'version'], name='one_attendance_change_per_version')]

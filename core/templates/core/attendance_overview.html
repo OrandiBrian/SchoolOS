@@ -1,0 +1,30 @@
+{% extends 'core/base.html' %}
+{% block title %}Attendance · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <p class="eyebrow">Daily registers</p><h1 class="page-title mt-2">Attendance</h1>
+  <p class="mt-2 text-sm text-slate-500">{% if current_membership.role == 'teacher' %}Your assigned classes{% else %}School-wide overview{% endif %}. Unmarked learners are never counted as present.</p>
+  <form method="get" class="card my-6 flex flex-wrap items-end gap-3 p-4">
+    <div><label for="day" class="form-label">Register date</label><input id="day" name="date" type="date" class="form-input" value="{{ day|date:'Y-m-d' }}"></div>
+    <button class="btn-primary">View date</button><a href="{% url 'attendance_overview' %}" class="btn-secondary">Today</a>
+  </form>
+  {% if error %}<p class="alert alert-error mb-4">{{ error }}</p>{% endif %}
+  {% if day > today %}<p class="alert alert-info mb-4">This date is in the future. Registers can be recorded on the day or afterwards.</p>{% endif %}
+  <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div class="stat-card"><p class="detail-label">Submitted</p><p class="stat-value">{{ totals.submitted }}</p></div>
+    <div class="stat-card"><p class="detail-label">Draft / missing</p><p class="stat-value">{{ totals.draft }} / {{ totals.missing }}</p></div>
+    <div class="stat-card"><p class="detail-label">Absent / excused</p><p class="stat-value">{{ totals.absent }} / {{ totals.excused }}</p></div>
+    <div class="stat-card"><p class="detail-label">Present / late</p><p class="stat-value">{{ totals.present }} / {{ totals.late }}</p></div>
+  </div>
+  <p class="mt-3 text-xs text-slate-500">Counts include saved drafts. {{ totals.unmarked }} learner{{ totals.unmarked|pluralize }} unmarked. Missing registers are not absences.</p>
+  <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    {% for row in rows %}
+      <section class="card p-5">
+        <div class="flex items-start justify-between gap-3"><div><h2 class="text-lg font-bold">{{ row.group.grade }} · {{ row.group.name }}</h2><p class="mt-1 text-sm text-slate-500">{{ row.group.academic_year }}</p></div><span class="badge {% if row.state == 'submitted' %}badge-active{% else %}badge-muted{% endif %}">{{ row.state|title }}</span></div>
+        <p class="my-4 text-sm">{{ row.counts.present }} present · {{ row.counts.late }} late · {{ row.counts.absent }} absent<br>{{ row.counts.excused }} excused · {{ row.counts.unmarked }} unmarked</p>
+        {% if can_open %}<a class="btn-secondary w-full" href="{% url 'attendance_register' row.group.pk day|date:'Y-m-d' %}">Open register</a>{% endif %}
+      </section>
+    {% empty %}<div class="empty-state md:col-span-2"><p class="font-bold">No classes for this date</p><p class="mt-2 text-sm text-slate-500">Choose a date within an academic year. Teachers also need a class assignment.</p></div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

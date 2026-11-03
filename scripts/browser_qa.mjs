@@ -89,7 +89,42 @@ try {
   assert(!mobileForm.overflow, "Mobile registration form has document-level horizontal overflow.");
   await screenshot("mobile-registration.png");
 
+
+  let attendanceResult = null;
+  if (process.env.SCHOOLOS_ATTENDANCE_QA === "1") {
+    await navigate(`${baseUrl}/attendance/?date=2026-10-16`);
+    const href = await evaluate(`document.querySelector('a[href*="/2026-10-16/"]').href`);
+    await navigate(href);
+    assert((await inspectPage()).text.includes("Unmarked"), "Attendance roster is missing.");
+    await evaluate(`document.querySelectorAll('select[name^="mark_"]').forEach(el => { el.value = 'present'; el.dispatchEvent(new Event('change', {bubbles:true})); });`);
+    await send('Network.emulateNetworkConditions', {offline:true, latency:0, downloadThroughput:0, uploadThroughput:0});
+    await evaluate(`document.querySelector('button[value="draft"]').click()`);
+    await waitUntil(`document.getElementById('save-state').textContent.includes('fetch') || document.getElementById('save-state').textContent.includes('confirmed')`);
+    assert(await evaluate(`document.querySelector('select[name^="mark_"]').value === 'present'`), 'Failed save lost attendance marks.');
+    await send('Network.emulateNetworkConditions', {offline:false, latency:0, downloadThroughput:-1, uploadThroughput:-1});
+    let loaded = waitForNavigation();
+    await evaluate(`document.querySelector('button[value="draft"]').click()`);
+    await loaded;
+    assert((await inspectPage()).text.includes('Draft saved'), 'Draft save failed.');
+    loaded = waitForNavigation();
+    await evaluate(`document.querySelector('button[value="submit"]').click()`);
+    await loaded;
+    assert((await inspectPage()).text.includes('Submitted'), 'Submission failed.');
+    assert((await inspectPage()).width === 390, 'Attendance expanded mobile viewport.');
+    await screenshot('mobile-attendance.png');
+    await evaluate(`const mark = document.querySelector('select[name^="mark_"]'); mark.value = 'absent'; mark.dispatchEvent(new Event('change',{bubbles:true})); document.querySelector('[name="reason"]').value = 'Fictional browser QA correction';`);
+    loaded = waitForNavigation();
+    await evaluate(`document.querySelector('button[value="correct"]').click()`);
+    await loaded;
+    assert(await evaluate(`document.body.textContent.includes('Fictional browser QA correction')`), 'Correction history missing.');
+    await setViewport(1440,1000);
+    await navigate(`${baseUrl}/attendance/?date=2026-10-16`);
+    await screenshot('desktop-attendance.png');
+    attendanceResult = {draft:true, submitted:true, correction:true, networkFailurePreservesMarks:true};
+  }
+
   const result = {
+    attendanceResult,
     baseUrl,
     viewportChecks: {
       desktopDashboard: dashboard,
@@ -217,4 +252,13 @@ async function waitForDebugger(debugPort) {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+async function waitUntil(expression) {
+  const deadline = Date.now() + 10000;
+  while (Date.now() < deadline) {
+    if (await evaluate(expression)) return;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  throw new Error("Browser condition timed out: " + expression);
 }

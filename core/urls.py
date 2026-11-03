@@ -1,9 +1,11 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from . import views
+from . import views, attendance
 
 urlpatterns = [
+    path("attendance/", attendance.overview, name="attendance_overview"),
+    path("attendance/<int:group_pk>/<str:day>/", attendance.register_view, name="attendance_register"),
     path("login/", views.SchoolOSLoginView.as_view(), name="login"),
     path(
         "logout/",

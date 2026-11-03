@@ -107,7 +107,7 @@
       {% if assigned_groups %}
         <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {% for group in assigned_groups %}
-            <a href="{% url 'learner_list' %}?q={{ group.grade.name|urlencode }}" class="card p-5 transition hover:border-forest">
+            <a href="{% url 'attendance_overview' %}" class="card p-5 transition hover:border-forest">
               <p class="text-lg font-bold text-ink">{{ group.grade }}</p>
               <p class="mt-1 text-sm text-slate-500">{{ group.academic_year }} · Stream {{ group.name }}</p>
               <p class="mt-5 text-2xl font-bold text-forest">{{ group.active_learners }}</p>
@@ -149,10 +149,10 @@
   {% endif %}
 
   <section class="mt-10 border-t border-slate-200 pt-7">
-    <p class="eyebrow">Later phases</p>
+    <p class="eyebrow">School operations</p>
     <div class="mt-4 grid gap-3 md:grid-cols-3">
       <div class="rounded-lg border border-dashed border-slate-300 p-4">
-        <p class="font-bold text-slate-700">Attendance</p><p class="mt-1 text-sm text-slate-500">Daily assigned-class registers arrive in Phase 2.</p>
+        <a href="{% url 'attendance_overview' %}" class="font-bold text-forest">Open daily attendance →</a><p class="mt-1 text-sm text-slate-500">Class registers, submission tracking and correction history.</p>
       </div>
       <div class="rounded-lg border border-dashed border-slate-300 p-4">
         <p class="font-bold text-slate-700">Finance</p><p class="mt-1 text-sm text-slate-500">Fee schedules, invoices, and payments follow foundation.</p>

@@ -26,6 +26,7 @@ SQLite is the local default. Set `DATABASE_URL=postgresql://...` for PostgreSQL.
 - School settings, academic years, terms, grades and streams.
 - Learner registration/edit/search, permanent admission numbers, duplicate warnings, guardians, annual enrolments.
 - CSV template, row validation, preview and explicit all-or-nothing import confirmation.
+- Daily class attendance, partial drafts, complete submissions, school-head corrections with reasons, version conflict protection and attendance audit history.
 - Responsive desktop/mobile interfaces and locally compiled CSS/vendored HTMX.
 
 Imported guardian rows intentionally create separate records; matching contact details alone do not prove identity. Staff can explicitly choose a verified existing guardian from the learner screen. No parent login rights are granted by guardian records.
@@ -52,6 +53,16 @@ It checks login, dashboard, learner list, registration layout and local assets a
 
 ## Before live use
 
-PostgreSQL concurrent admission-number allocation has a dedicated test but is skipped under SQLite. Validate it against the intended database. This phase does not include attendance, fees, parent portal, M-Pesa, MFA, login throttling, full audit history, password recovery, production hosting or tested backup restoration. These remain required pilot-readiness work. Set strong secrets, explicit allowed hosts, HTTPS and `DJANGO_DEBUG=false` for any production configuration; only trust forwarded HTTPS headers from a configured trusted proxy. Do not expose the development server publicly.
+PostgreSQL concurrent admission-number allocation has a dedicated test but is skipped under SQLite. Validate it against the intended database. This phase does not include fees, parent portal, M-Pesa, MFA, login throttling, audit history outside attendance, password recovery, production hosting or tested backup restoration. These remain required pilot-readiness work. Set strong secrets, explicit allowed hosts, HTTPS and `DJANGO_DEBUG=false` for any production configuration; only trust forwarded HTTPS headers from a configured trusted proxy. Do not expose the development server publicly.
 
 Current annual enrolment is one record per learner/year; class transfers and withdrawal-history workflows need the attendance phase design. Actual stream names, term dates and school data remain to be supplied.
+
+## Attendance workflow
+
+Open Attendance and choose a date within the class academic year. Teachers can write assigned classes; the head can write all classes; the secretary can read; directors and board see aggregate counts only. Save draft allows unmarked pupils. Submit requires every pupil marked. Teachers cannot edit submitted registers; the head must supply a reason for corrections. Each save records actor, time, changes and version. Stale edits cannot silently overwrite newer saves.
+
+Dates after today are blocked, including future 2027 demo dates. To explore before 2027, select a past date in the fictional 2026 academic year. Missing/draft totals are distinct from absences. Weekends/holidays are not automatically excluded until school calendars are supplied.
+
+The eligible class list is frozen on first save. Later enrolment changes do not silently alter historical attendance. Roster amendments and within-year transfers remain deferred. Only dated withdrawals can be placed accurately in historical rosters. Network failure keeps entered values on the open page; this is not offline storage, and closing the page can lose unsaved work.
+
+Extended browser QA: set `SCHOOLOS_ATTENDANCE_QA=1` against a disposable seeded demo database. It writes a draft, submission and head correction for 2026-10-16 in the first class and simulates a network failure. Run on a fresh demo database; it intentionally requires an untouched register.
