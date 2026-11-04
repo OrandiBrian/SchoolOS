@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+{% block title %}Finance · SchoolOS{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <p class="eyebrow">{{ current_school.name }} · KES</p>
+  <h1 class="page-title mt-2">{% block heading %}Fees &amp; finance{% endblock %}</h1>
+  {% if current_membership.role == 'head' or current_membership.role == 'secretary' %}
+  <nav class="my-5 flex flex-wrap gap-2 print:hidden" aria-label="Finance navigation">
+    <a class="btn-secondary" href="{% url 'finance_dashboard' %}">Overview</a>
+    <a class="btn-secondary" href="{% url 'finance_invoice_create' %}">Issue invoice</a>
+    <a class="btn-primary" href="{% url 'finance_payment_create' %}">Record payment</a>
+    <a class="btn-secondary" href="{% url 'finance_payments' %}">Receipts</a>
+    <a class="btn-secondary" href="{% url 'finance_approvals' %}">Approvals</a>
+    <a class="btn-secondary" href="{% url 'finance_audit' %}">History</a>
+  </nav>
+  {% endif %}
+  {% block finance_content %}{% endblock %}
+</div>
+{% endblock %}

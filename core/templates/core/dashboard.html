@@ -155,7 +155,7 @@
         <a href="{% url 'attendance_overview' %}" class="font-bold text-forest">Open daily attendance →</a><p class="mt-1 text-sm text-slate-500">Class registers, submission tracking and correction history.</p>
       </div>
       <div class="rounded-lg border border-dashed border-slate-300 p-4">
-        <p class="font-bold text-slate-700">Finance</p><p class="mt-1 text-sm text-slate-500">Fee schedules, invoices, and payments follow foundation.</p>
+        {% if role != 'teacher' %}<a href="{% url 'finance_dashboard' %}" class="font-bold text-forest">Fees &amp; finance →</a><p class="mt-1 text-sm text-slate-500">Term invoices, payments, balances and approvals.</p>{% else %}<p class="font-bold text-slate-700">Finance</p><p class="mt-1 text-sm text-slate-500">Managed by the secretary and school head.</p>{% endif %}
       </div>
       <div class="rounded-lg border border-dashed border-slate-300 p-4">
         <p class="font-bold text-slate-700">Parent access</p><p class="mt-1 text-sm text-slate-500">Guardian accounts and portals remain deferred.</p>

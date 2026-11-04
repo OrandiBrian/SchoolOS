@@ -5,6 +5,7 @@ admin.site.site_header = "SchoolOS administration"
 admin.site.site_title = "SchoolOS administration"
 
 urlpatterns = [
+    path("finance/", include("finance.urls")),
     path("admin/", admin.site.urls),
     path("", include("core.urls")),
 ]

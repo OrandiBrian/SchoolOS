@@ -123,7 +123,83 @@ try {
     attendanceResult = {draft:true, submitted:true, correction:true, networkFailurePreservesMarks:true};
   }
 
+
+  let financeResult = null;
+  if (process.env.SCHOOLOS_FINANCE_QA === "1") {
+    await setViewport(1440,1000);
+    await navigate(`${baseUrl}/finance/`);
+    assert((await inspectPage()).text.toLowerCase().includes('net collections'), 'Finance dashboard missing.');
+    await screenshot('desktop-finance.png');
+    await navigate(`${baseUrl}/finance/payments/new/`);
+    await evaluate(`
+      document.querySelector('[name="credit_owner"]').selectedIndex=1;
+      document.querySelector('[name="payer"]').value='Fictional Browser Parent';
+      document.querySelector('[name="method"]').value='mpesa';
+      document.querySelector('[name="reference"]').value='BROWSER-'+Date.now();
+      document.querySelector('[name="amount"]').value='100.25';
+      document.querySelector('[name="invoice"]').selectedIndex=1;
+      document.querySelector('[name="allocation_amount"]').value='100.00';
+    `);
+    let loaded=waitForNavigation();
+    await evaluate(`document.querySelector('main form').requestSubmit()`);
+    await loaded;
+    assert((await inspectPage()).text.toLowerCase().includes('remaining credit'), 'Receipt was not created.');
+    assert((await inspectPage()).text.includes('0.25'), 'Receipt credit calculation missing.');
+    const receiptUrl=await evaluate('window.location.href');
+    await setViewport(390,844);
+    await reload();
+    assert((await inspectPage()).width===390 && !(await inspectPage()).overflow,'Mobile receipt overflow.');
+    await screenshot('mobile-receipt.png');
+    await setViewport(1440,1000);
+    await send('Emulation.setEmulatedMedia',{media:'print'});
+    await reload();
+    await screenshot('print-receipt.png');
+    await send('Emulation.setEmulatedMedia',{media:''});
+    await navigate(`${baseUrl}/finance/approvals/new/`);
+    assert(await evaluate(`document.querySelector('[name="payment"]').disabled && !document.querySelector('[name="invoice"]').disabled`), 'Approval form shows unrelated targets.');
+    await evaluate(`{ const kind=document.querySelector('[name="kind"]');kind.value='payment_reversal';kind.dispatchEvent(new Event('change')); }`);
+    assert(await evaluate(`!document.querySelector('[name="payment"]').disabled && document.querySelector('[name="amount"]').disabled`), 'Reversal form fields are incorrect.');
+    await evaluate(`{ const kind=document.querySelector('[name="kind"]');kind.value='discount';kind.dispatchEvent(new Event('change')); }`);
+    await evaluate(`
+      document.querySelector('[name="kind"]').value='discount';
+      document.querySelector('[name="invoice"]').selectedIndex=1;
+      document.querySelector('[name="amount"]').value='50.00';
+      document.querySelector('[name="reason"]').value='Fictional browser review discount';
+    `);
+    loaded=waitForNavigation();
+    await evaluate(`document.querySelector('main form').requestSubmit()`);
+    await loaded;
+    assert((await inspectPage()).text.includes('Pending'),'Approval request not created.');
+    await evaluate(`document.querySelector('[name="decision"]').value='approve';document.querySelector('[name="note"]').value='Verified fictional demonstration';`);
+    loaded=waitForNavigation();
+    await evaluate(`document.querySelector('main form').requestSubmit()`);
+    await loaded;
+    assert((await inspectPage()).text.includes('Approved'),'Head approval failed.');
+    await navigate(`${baseUrl}/finance/`);
+    const invoiceUrl=await evaluate(`document.querySelector('main a[href*="/finance/invoices/"]:not([href$="new/"])').href`);
+    await navigate(invoiceUrl);
+    const planUrl=await evaluate(`document.querySelector('a[href$="/instalments/"]').href`);
+    await navigate(planUrl);
+    await evaluate(`
+      const net=document.body.innerText.match(/Net invoice charge: KES ([0-9.]+)/)[1].replace(/\.$/,'');
+      document.querySelector('[name="agreed_with"]').value='Fictional Browser Parent';
+      document.querySelector('[name="rows"]').value='2027-01-20, '+net;
+    `);
+    loaded=waitForNavigation();
+    await evaluate(`document.querySelector('main form').requestSubmit()`);
+    await loaded;
+    assert((await inspectPage()).text.includes('Agreed with Fictional Browser Parent'),'Instalment agreement failed.');
+    const statementUrl=await evaluate(`document.querySelector('a[href$="/statement/"]').href`);
+    await navigate(statementUrl);
+    await setViewport(390,844);
+    await reload();
+    assert((await inspectPage()).width===390 && !(await inspectPage()).overflow,'Mobile statement overflow.');
+    await screenshot('mobile-statement.png');
+    financeResult={payment:true,credit:true,approval:true,instalment:true,mobileReceipt:true,mobileStatement:true,printReceipt:true};
+  }
+
   const result = {
+    financeResult,
     attendanceResult,
     baseUrl,
     viewportChecks: {

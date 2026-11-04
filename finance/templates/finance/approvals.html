@@ -1,0 +1,4 @@
+{% extends 'finance/base.html' %}
+{% block heading %}Financial approvals{% endblock %}
+{% block finance_content %}<a class="btn-primary mb-5" href="{% url 'finance_approval_create' %}">New request</a><div class="space-y-3">
+{% for approval in approvals %}<a href="{% url 'finance_review' approval.pk %}" class="card block p-5"><div class="flex flex-wrap justify-between gap-3"><p class="font-bold">{{ approval.get_kind_display }}{% if approval.amount %} · KES {{ approval.amount|floatformat:2 }}{% endif %}</p><span class="badge badge-muted">{{ approval.status|title }}</span></div><p class="mt-2 text-sm">{{ approval.learner|default:'' }} {{ approval.invoice|default:'' }} {{ approval.payment|default:'' }}</p><p class="mt-2 text-sm text-slate-500">{{ approval.reason }}</p></a>{% empty %}<div class="empty-state">No approval requests yet.</div>{% endfor %}</div>{% endblock %}

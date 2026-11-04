@@ -1,6 +1,6 @@
 # FayBri SchoolOS — Lofty Creek pilot plan
 
-Status: Phases 1–2 local foundation and attendance implemented and reviewed. See ATTENDANCE_REPORT.md for Phase 2. See FOUNDATION_REPORT.md for evidence and pilot-readiness limitations.
+Status: Phases 1–2 and the manual finance milestone are implemented for local review. See ATTENDANCE_REPORT.md and FINANCE_REPORT.md. Finance statement imports and live integrations remain deferred. See FOUNDATION_REPORT.md for evidence and pilot-readiness limitations.
 
 Execution override: user explicitly requested standalone work in this chat, without DeepSeek or sub-agents. This supersedes the delegated workflow below for this project.
 Updated: 2026-11-03. Target live pilot: 2027 school year (confirmed).

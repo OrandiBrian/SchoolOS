@@ -1,0 +1,12 @@
+{% extends 'finance/base.html' %}
+{% load static %}
+{% block heading %}{{ title }}{% endblock %}
+{% block finance_content %}
+<p class="max-w-3xl text-sm leading-6 text-slate-600">{{ help_text }}</p>
+<form method="post" class="card mt-6 max-w-3xl p-5 sm:p-7">{% csrf_token %}
+  {% include 'core/partials/form.html' %}
+  <div class="mt-6 flex gap-3"><button class="btn-primary" type="submit">Save</button><a href="{% url 'finance_dashboard' %}" class="btn-secondary">Cancel</a></div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}<script src="{% static 'js/finance-forms.js' %}" defer></script>{% endblock %}

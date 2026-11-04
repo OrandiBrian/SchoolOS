@@ -10,7 +10,7 @@ from .models import SchoolMembership
 def active_membership(user, school_id):
     return (
         SchoolMembership.objects.select_related("school", "staff_record")
-        .filter(user=user, school_id=school_id, active=True, school__is_active=True)
+        .filter(user=user, user__is_active=True, school_id=school_id, active=True, school__is_active=True)
         .first()
     )
 

@@ -188,3 +188,11 @@
     @apply inline-flex;
   }
 }
+
+@media print {
+  .sidebar, header, nav, button { display: none !important; }
+  .app-shell { display: block !important; }
+  .page-wrap { padding: 0 !important; max-width: none !important; }
+  .card, .stat-card { box-shadow: none !important; break-inside: avoid; }
+  body { background: white !important; }
+}

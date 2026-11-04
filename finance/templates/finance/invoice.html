@@ -1,0 +1,25 @@
+{% extends 'finance/base.html' %}
+{% block heading %}Invoice {{ invoice.number }}{% endblock %}
+{% block finance_content %}
+{% if invoice.voided %}<p class="alert alert-error mb-5">REVERSED — excluded from balances. Previously allocated payments have returned to their credit owners. The original charges remain below for history.</p>{% endif %}
+<div class="card p-5 sm:p-7">
+  <div class="flex flex-wrap justify-between gap-3"><div><h2 class="text-xl font-bold">{{ invoice.learner.full_name }}</h2><p class="mt-1 text-sm text-slate-500">{{ invoice.learner.admission_number }} · {{ invoice.description }}</p></div><div><p class="detail-label">Due date</p><p>{{ invoice.due_date|date:'j M Y' }}</p></div></div>
+  <dl class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+    <div><dt class="detail-label">{% if invoice.kind == 'opening' %}Opening balance{% else %}Tuition{% endif %}</dt><dd class="detail-value">KES {{ invoice.tuition|floatformat:2 }}</dd></div>
+    <div><dt class="detail-label">Transport</dt><dd class="detail-value">KES {{ invoice.transport|floatformat:2 }}</dd></div>
+    <div><dt class="detail-label">Discounts / bursaries</dt><dd class="detail-value">KES {{ invoice.assistance|floatformat:2 }}</dd></div>
+    <div><dt class="detail-label">Net charges</dt><dd class="detail-value">KES {{ invoice.net|floatformat:2 }}</dd></div>
+    <div><dt class="detail-label">Payments allocated</dt><dd class="detail-value">KES {{ invoice.paid|floatformat:2 }}</dd></div>
+    <div><dt class="detail-label">Balance</dt><dd class="mt-1 text-xl font-bold text-forest">KES {{ invoice.outstanding|floatformat:2 }}</dd></div>
+  </dl>
+  <div class="mt-6 flex flex-wrap gap-3 print:hidden"><a class="btn-secondary" href="{% url 'finance_statement' invoice.learner.pk %}">Learner statement</a><a class="btn-secondary" href="{% url 'finance_plan' invoice.pk %}">Agree instalments</a><button class="btn-secondary" onclick="window.print()">Print invoice</button></div>
+</div>
+<section class="mt-6 card p-5"><h2 class="text-lg font-bold">Instalment agreement</h2>
+{% if plan_status %}<p class="mt-2 text-sm">Agreed with {{ plan_status.plan.agreed_with }} · {{ plan_status.plan.created_at|date:'j M Y' }}</p><p class="mt-1 text-sm">{{ plan_status.plan.notes }}</p>
+  {% if plan_status.needs_revision %}<p class="alert alert-warning mt-3">Charges changed after this agreement. Agree a revised schedule; the old amounts below are historical.</p>{% else %}<p class="mt-3 font-bold">Overdue instalments: KES {{ plan_status.overdue|floatformat:2 }}</p>{% endif %}
+  <div class="mt-4 space-y-2">{% for item in plan_status.rows %}<div class="flex flex-wrap justify-between gap-2 border-t border-slate-100 py-3"><span>{{ item.due_date|date:'j M Y' }}</span><span>KES {{ item.amount|floatformat:2 }} · Remaining {{ item.outstanding|floatformat:2 }} {% if item.overdue and not plan_status.needs_revision %}<span class="badge badge-muted">Overdue</span>{% endif %}</span></div>{% endfor %}</div>
+  <details class="mt-4"><summary class="cursor-pointer text-sm font-bold">Agreement versions</summary>{% for plan in invoice.plans.all %}<p class="mt-2 text-sm">{{ plan.created_at|date:'j M Y, H:i' }} · {{ plan.agreed_with }} · KES {{ plan.charge_at_agreement|floatformat:2 }}</p>{% endfor %}</details>
+{% else %}<p class="mt-2 text-sm text-slate-500">No individual instalment agreement recorded.</p>{% endif %}</section>
+<div class="mt-6 grid gap-6 lg:grid-cols-2"><section class="card p-5"><h2 class="font-bold">Allocated payments</h2>{% for allocation in allocations %}<a class="mt-3 block text-sm text-forest" href="{% url 'finance_receipt' allocation.payment.pk %}">{{ allocation.payment.number }} · KES {{ allocation.amount|floatformat:2 }} {% if allocation.payment.reversed %}— reversed{% endif %}</a>{% empty %}<p class="mt-2 text-sm text-slate-500">No payments allocated.</p>{% endfor %}</section>
+<section class="card p-5"><h2 class="font-bold">Approved assistance</h2>{% for adjustment in adjustments %}<a class="mt-3 block text-sm text-forest" href="{% url 'finance_review' adjustment.approval.pk %}">{{ adjustment.approval.get_kind_display }} · KES {{ adjustment.amount|floatformat:2 }} {% if adjustment.reversed %}— reversed{% endif %}</a>{% empty %}<p class="mt-2 text-sm text-slate-500">No approved assistance.</p>{% endfor %}</section></div>
+{% endblock %}

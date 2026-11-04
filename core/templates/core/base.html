@@ -23,6 +23,7 @@
         </a>
       </div>
       <nav class="flex-1 space-y-1 px-3 py-5" aria-label="Main navigation">
+        {% if current_membership.role != 'teacher' %}<a href="{% url 'finance_dashboard' %}" class="nav-link">Fees &amp; finance</a>{% endif %}
         <a href="{% url 'attendance_overview' %}" class="nav-link">Attendance</a>
         <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}nav-link-active{% endif %}">
           <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -95,6 +96,7 @@
           </form>
         </div>
         <nav class="flex gap-1 overflow-x-auto px-3 pb-2" aria-label="Mobile navigation">
+          {% if current_membership.role != 'teacher' %}<a href="{% url 'finance_dashboard' %}" class="mobile-nav-link">Finance</a>{% endif %}
           <a href="{% url 'attendance_overview' %}" class="mobile-nav-link">Attendance</a>
           <a href="{% url 'dashboard' %}" class="mobile-nav-link">Overview</a>
           {% if current_membership.role == "head" or current_membership.role == "secretary" or current_membership.role == "teacher" %}

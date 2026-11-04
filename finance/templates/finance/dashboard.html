@@ -1,0 +1,20 @@
+{% extends 'finance/base.html' %}
+{% block finance_content %}
+<p class="mt-3 text-sm text-slate-500">All-time recorded balances. Opening credits are excluded from new collections; reversed payments are excluded.</p>
+<div class="my-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="stat-card"><p class="detail-label">Net collections</p><p class="stat-value">{{ collections|floatformat:2 }}</p></div>
+  <div class="stat-card"><p class="detail-label">Invoice balances</p><p class="stat-value">{{ outstanding|floatformat:2 }}</p></div>
+  <div class="stat-card"><p class="detail-label">Unallocated credits</p><p class="stat-value">{{ credit|floatformat:2 }}</p></div>
+  <div class="stat-card"><p class="detail-label">Net owed to school</p><p class="stat-value">{{ net_balance|floatformat:2 }}</p></div>
+</div>
+{% if can_manage %}
+<div class="mb-6 flex flex-wrap gap-3"><a href="{% url 'finance_schedule' %}" class="btn-secondary">Set term fees</a><a href="{% url 'finance_approval_create' %}" class="btn-secondary">Request assistance / opening balance / reversal</a><span class="self-center text-sm text-slate-500">{{ pending }} pending approval{{ pending|pluralize }}</span></div>
+<div class="grid gap-6 lg:grid-cols-2">
+<section><h2 class="mb-3 text-lg font-bold">Learner invoices</h2><div class="space-y-3">
+{% for invoice in invoices %}<a class="card block p-4 hover:border-forest" href="{% url 'finance_invoice' invoice.pk %}"><div class="flex flex-wrap justify-between gap-3"><span class="font-bold">{{ invoice.learner.full_name }}</span><span class="font-bold text-forest">KES {{ invoice.outstanding|floatformat:2 }} due</span></div><p class="mt-2 text-sm text-slate-500">{{ invoice.number }} · {{ invoice.description }}{% if invoice.voided %} · Reversed{% endif %}</p></a>{% empty %}<div class="empty-state"><p class="font-bold">No invoices yet</p><p class="mt-2 text-sm">Set a grade’s term fees, then issue its first learner invoice.</p></div>{% endfor %}
+</div></section>
+<section><h2 class="mb-3 text-lg font-bold">Term fee schedules</h2><div class="space-y-3">
+{% for schedule in schedules %}<div class="card p-4"><p class="font-bold">{{ schedule.grade }} · {{ schedule.term.name }}</p><p class="mt-2 text-sm">Tuition: KES {{ schedule.tuition|floatformat:2 }}<br>Optional transport: KES {{ schedule.transport|floatformat:2 }}</p></div>{% empty %}<div class="empty-state"><p>No fee schedules configured.</p></div>{% endfor %}
+</div></section></div>
+{% else %}<p class="alert alert-info">Summary access. Individual learner finances, receipts and approval requests are restricted to the secretary and school head.</p>{% endif %}
+{% endblock %}
